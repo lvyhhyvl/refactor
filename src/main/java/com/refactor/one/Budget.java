@@ -35,7 +35,16 @@ public class Budget {
         return month.atDay(1);
     }
 
-    int getDays() {
+    long getDays() {
         return month.lengthOfMonth();
+    }
+
+    public Period getPeriod() {
+        return new Period(getStart(),getEnd());
+    }
+
+    long getOverlappingAmount(Period period) {
+        long daysBetween = period.getOverlappingDays(getPeriod());
+        return this.amount / getDays() * daysBetween;
     }
 }
