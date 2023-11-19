@@ -2,6 +2,7 @@ package com.refactor.one;
 
 import java.time.LocalDate;
 import java.time.YearMonth;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -25,9 +26,10 @@ public class BudgetPlan {
 
         // If the area between Start and End overlap at least two budget periods.
         if (YearMonth.from(startDate).isBefore(YearMonth.from(endDate))) {
+            LocalDate endOfFirstBudget = startDate.withDayOfMonth(startDate.lengthOfMonth());
             long amountStartPeriod = getBudgetAmount(startDate);
             long daysInStartPeriod = getBudgetDaysCount(startDate);
-            long daysAfterStartDateInStartPeriod = startDate.until(startDate.withDayOfMonth(startDate.lengthOfMonth()), DAYS) + 1;
+            long daysAfterStartDateInStartPeriod = startDate.until(endOfFirstBudget, DAYS) + 1;
             long totalStartPeriod = amountStartPeriod / daysInStartPeriod * daysAfterStartDateInStartPeriod;
 
             long totalInMiddle = 0;
@@ -35,9 +37,10 @@ public class BudgetPlan {
                 totalInMiddle += budget.getAmount();
             }
 
+            LocalDate startOfLastBudget = endDate.withDayOfMonth(1);
             long amountEndPeriod = getBudgetAmount(endDate);
             long daysInEndPeriod = getBudgetDaysCount(endDate);
-            long daysBeforeEndDateInEndPeriod = endDate.getDayOfMonth();
+            long daysBeforeEndDateInEndPeriod = startOfLastBudget.until(endDate, DAYS) + 1;
             long totalEndPeriod = amountEndPeriod / daysInEndPeriod * daysBeforeEndDateInEndPeriod;
 
             return totalStartPeriod + totalInMiddle + totalEndPeriod;
