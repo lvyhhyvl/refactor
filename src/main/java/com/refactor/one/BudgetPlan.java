@@ -2,7 +2,6 @@ package com.refactor.one;
 
 import java.time.LocalDate;
 import java.time.YearMonth;
-import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -15,25 +14,25 @@ public class BudgetPlan {
         this.repo = repo;
     }
 
-    public long query(LocalDate startDate, LocalDate endDate) {
+    public long query(Period period) {
         //If Start and End are in the same budget period
-        if (startDate.withDayOfMonth(1).equals(endDate.withDayOfMonth(1))) {
-            long amountBetween = getAmountBetween(startDate, endDate);
+        if (period.getStartDate().withDayOfMonth(1).equals(period.getEndDate().withDayOfMonth(1))) {
+            long amountBetween = getAmountBetween(period.getStartDate(), period.getEndDate());
             return amountBetween;
         }
 
         // If the area between Start and End overlap at least two budget periods.
-        if (YearMonth.from(startDate).isBefore(YearMonth.from(endDate))) {
-            LocalDate endOfFirstBudget = startDate.withDayOfMonth(startDate.lengthOfMonth());
-            long totalStartPeriod = getAmountBetween(startDate, endOfFirstBudget);
+        if (YearMonth.from(period.getStartDate()).isBefore(YearMonth.from(period.getEndDate()))) {
+            LocalDate endOfFirstBudget = period.getStartDate().withDayOfMonth(period.getStartDate().lengthOfMonth());
+            long totalStartPeriod = getAmountBetween(period.getStartDate(), endOfFirstBudget);
 
             long totalInMiddle = 0;
-            for (Budget budget : getBudgetBetween(startDate, endDate)) {
+            for (Budget budget : getBudgetBetween(period.getStartDate(), period.getEndDate())) {
                 totalInMiddle += budget.getAmount();
             }
 
-            LocalDate startOfLastBudget = endDate.withDayOfMonth(1);
-            long totalEndPeriod = getAmountBetween(startOfLastBudget, endDate);
+            LocalDate startOfLastBudget = period.getEndDate().withDayOfMonth(1);
+            long totalEndPeriod = getAmountBetween(startOfLastBudget, period.getEndDate());
 
             return totalStartPeriod + totalInMiddle + totalEndPeriod;
         }
