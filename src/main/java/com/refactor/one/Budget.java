@@ -1,6 +1,8 @@
 package com.refactor.one;
 
+import java.time.LocalDate;
 import java.time.YearMonth;
+import java.util.Objects;
 
 public class Budget {
     private final YearMonth month;
@@ -17,5 +19,19 @@ public class Budget {
 
     public long getAmount() {
         return amount;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        Budget budget = (Budget) o;
+        return Objects.equals(month, budget.month);
+    }
+
+    LocalDate getEnd() {
+        return getMonth().atEndOfMonth();
+    }
+
+    LocalDate getStart() {
+        return getMonth().atDay(1);
     }
 }

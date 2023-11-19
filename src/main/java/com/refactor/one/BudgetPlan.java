@@ -16,23 +16,23 @@ public class BudgetPlan {
 
     public long query(Period period) {
         //If Start and End are in the same budget period
-        if (period.getStartDate().withDayOfMonth(1).equals(period.getEndDate().withDayOfMonth(1))) {
-            long amountBetween = getAmountBetween(period.getStartDate(), period.getEndDate());
+        Budget firstBudget = getBudgetContaining(period.getStart());
+        Budget lastBudget = getBudgetContaining(period.getEnd());
+        if (firstBudget.equals(lastBudget)) {
+            long amountBetween = getAmountBetween(period.getStart(), period.getEnd());
             return amountBetween;
         }
 
         // If the area between Start and End overlap at least two budget periods.
-        if (YearMonth.from(period.getStartDate()).isBefore(YearMonth.from(period.getEndDate()))) {
-            LocalDate endOfFirstBudget = period.getStartDate().withDayOfMonth(period.getStartDate().lengthOfMonth());
-            long totalStartPeriod = getAmountBetween(period.getStartDate(), endOfFirstBudget);
+        if (firstBudget.getMonth().isBefore(lastBudget.getMonth())) {
+            long totalStartPeriod = getAmountBetween(period.getStart(), firstBudget.getEnd());
 
             long totalInMiddle = 0;
-            for (Budget budget : getBudgetBetween(period.getStartDate(), period.getEndDate())) {
+            for (Budget budget : getBudgetBetween(period.getStart(), period.getEnd())) {
                 totalInMiddle += budget.getAmount();
             }
 
-            LocalDate startOfLastBudget = period.getEndDate().withDayOfMonth(1);
-            long totalEndPeriod = getAmountBetween(startOfLastBudget, period.getEndDate());
+            long totalEndPeriod = getAmountBetween(lastBudget.getStart(), period.getEnd());
 
             return totalStartPeriod + totalInMiddle + totalEndPeriod;
         }
@@ -56,7 +56,7 @@ public class BudgetPlan {
     private Budget getBudgetContaining(LocalDate date) {
         List<Budget> budgets = repo.findAll();
         return budgets.stream()
-                .filter(budget -> budget.getMonth().atDay(1).equals(date.withDayOfMonth(1)))
+                .filter(budget -> budget.getStart().equals(date.withDayOfMonth(1)))
                 .findFirst()
                 .orElse(new Budget(YearMonth.of(date.getYear(), date.getMonth()), 0));
     }
@@ -69,7 +69,7 @@ public class BudgetPlan {
     private List<Budget> getBudgetBetween(LocalDate startDate, LocalDate endDate) {
         List<Budget> budgets = repo.findAll();
         return budgets.stream()
-                .filter(budget -> budget.getMonth().atDay(1).isAfter(startDate) && budget.getMonth().atEndOfMonth().isBefore(endDate))
+                .filter(budget -> budget.getStart().isAfter(startDate) && budget.getEnd().isBefore(endDate))
                 .collect(Collectors.toList());
     }
 }

@@ -3,19 +3,19 @@ package com.refactor.one;
 import java.time.LocalDate;
 
 public class Period {
-    private final LocalDate startDate;
-    private final LocalDate endDate;
+    private final LocalDate start;
+    private final LocalDate end;
 
-    public Period(LocalDate startDate, LocalDate endDate) {
-        this.startDate = startDate;
-        this.endDate = endDate;
+    public Period(LocalDate start, LocalDate endDate) {
+        this.start = start;
+        this.end = endDate;
     }
 
-    public LocalDate getStartDate() {
-        return startDate;
+    public LocalDate getStart() {
+        return start;
     }
 
-    public LocalDate getEndDate() {
-        return endDate;
+    public LocalDate getEnd() {
+        return end;
     }
 }
