@@ -18,19 +18,14 @@ public class BudgetPlan {
     public long query(LocalDate startDate, LocalDate endDate) {
         //If Start and End are in the same budget period
         if (startDate.withDayOfMonth(1).equals(endDate.withDayOfMonth(1))) {
-            long amount = getBudgetAmount(startDate);
-            long daysInPeriod = getBudgetDaysCount(startDate);
-            long daysBetween = startDate.until(endDate, DAYS) + 1;
-            return amount / daysInPeriod * daysBetween;
+            long amountBetween = getAmountBetween(startDate, endDate);
+            return amountBetween;
         }
 
         // If the area between Start and End overlap at least two budget periods.
         if (YearMonth.from(startDate).isBefore(YearMonth.from(endDate))) {
             LocalDate endOfFirstBudget = startDate.withDayOfMonth(startDate.lengthOfMonth());
-            long amountStartPeriod = getBudgetAmount(startDate);
-            long daysInStartPeriod = getBudgetDaysCount(startDate);
-            long daysAfterStartDateInStartPeriod = startDate.until(endOfFirstBudget, DAYS) + 1;
-            long totalStartPeriod = amountStartPeriod / daysInStartPeriod * daysAfterStartDateInStartPeriod;
+            long totalStartPeriod = getAmountBetween(startDate, endOfFirstBudget);
 
             long totalInMiddle = 0;
             for (Budget budget : getBudgetBetween(startDate, endDate)) {
@@ -38,15 +33,20 @@ public class BudgetPlan {
             }
 
             LocalDate startOfLastBudget = endDate.withDayOfMonth(1);
-            long amountEndPeriod = getBudgetAmount(endDate);
-            long daysInEndPeriod = getBudgetDaysCount(endDate);
-            long daysBeforeEndDateInEndPeriod = startOfLastBudget.until(endDate, DAYS) + 1;
-            long totalEndPeriod = amountEndPeriod / daysInEndPeriod * daysBeforeEndDateInEndPeriod;
+            long totalEndPeriod = getAmountBetween(startOfLastBudget, endDate);
 
             return totalStartPeriod + totalInMiddle + totalEndPeriod;
         }
 
         throw new RuntimeException("You should not be here.");
+    }
+
+    private long getAmountBetween(LocalDate startDate, LocalDate endDate) {
+        long amount = getBudgetAmount(startDate);
+        long daysInPeriod = getBudgetDaysCount(startDate);
+        long daysBetween = startDate.until(endDate, DAYS) + 1;
+        long amountBetween = amount / daysInPeriod * daysBetween;
+        return amountBetween;
     }
 
     private long getBudgetDaysCount(LocalDate date) {
