@@ -5,8 +5,6 @@ import java.time.YearMonth;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static java.time.temporal.ChronoUnit.DAYS;
-
 public class BudgetPlan {
     private final BudgetRepo repo;
 
@@ -19,20 +17,20 @@ public class BudgetPlan {
         Budget firstBudget = getBudgetContaining(period.getStart());
         Budget lastBudget = getBudgetContaining(period.getEnd());
         if (firstBudget.equals(lastBudget)) {
-            long amountBetween = getAmountBetween(period.getStart(), period.getEnd());
+            long amountBetween = getAmountBetween(new Period(period.getStart(), period.getEnd()), firstBudget);
             return amountBetween;
         }
 
         // If the area between Start and End overlap at least two budget periods.
         if (firstBudget.getMonth().isBefore(lastBudget.getMonth())) {
-            long totalStartPeriod = getAmountBetween(period.getStart(), firstBudget.getEnd());
+            long totalStartPeriod = getAmountBetween(new Period(period.getStart(), firstBudget.getEnd()), firstBudget);
 
             long totalInMiddle = 0;
             for (Budget budget : getBudgetBetween(period.getStart(), period.getEnd())) {
                 totalInMiddle += budget.getAmount();
             }
 
-            long totalEndPeriod = getAmountBetween(lastBudget.getStart(), period.getEnd());
+            long totalEndPeriod = getAmountBetween(new Period(lastBudget.getStart(), period.getEnd()), lastBudget);
 
             return totalStartPeriod + totalInMiddle + totalEndPeriod;
         }
@@ -40,17 +38,17 @@ public class BudgetPlan {
         throw new RuntimeException("You should not be here.");
     }
 
-    private long getAmountBetween(LocalDate startDate, LocalDate endDate) {
-        long amount = getBudgetAmount(startDate);
-        long daysInPeriod = getBudgetDaysCount(startDate);
-        long daysBetween = startDate.until(endDate, DAYS) + 1;
+    private long getAmountBetween(Period period, Budget budget) {
+        long amount = budget.getAmount();
+        long daysInPeriod = budget.getDays();
+        long daysBetween = period.getDays();
         long amountBetween = amount / daysInPeriod * daysBetween;
         return amountBetween;
     }
 
     private long getBudgetDaysCount(LocalDate date) {
         Budget budget = getBudgetContaining(date);
-        return budget.getMonth().lengthOfMonth();
+        return budget.getDays();
     }
 
     private Budget getBudgetContaining(LocalDate date) {
